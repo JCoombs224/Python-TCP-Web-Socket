@@ -62,8 +62,10 @@ def main():
             fileData = clientSocket.recv(1024).decode() # Get file data from response
             file = open(requestedFile, "w")
             file.write(fileData)
+            print(fileData)
             file.close()
-
+        elif response['HTTP_RESPONSE_STATUS_CODE'] == 404:
+            print("404 Page not found\n")
         
         clientSocket.close()
         
