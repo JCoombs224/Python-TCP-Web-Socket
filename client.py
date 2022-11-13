@@ -1,6 +1,7 @@
 from socket import *
 import pickle
 import os
+import codecs
 
 clientDir = os.getcwd()
 
@@ -106,8 +107,9 @@ def main():
             if response['HTTP_RESPONSE_STATUS_CODE'] == 200:
                 print("\nServer sent response code: 200 OK")
                 requestedFile = os.path.split(requestedFile)[1]
-                fileData = clientSocket.recv(1024).decode() # Get file data from response
-                file = open(requestedFile, "w")
+                print(requestedFile)
+                fileData = clientSocket.recv(1024).decode("utf-8", "ignore") # Get file data from response
+                file = codecs.open(requestedFile, "w")
                 file.write(fileData)
                 print("\nFile data:", fileData, "\n")
                 file.close()

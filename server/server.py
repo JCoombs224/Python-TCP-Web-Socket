@@ -1,6 +1,7 @@
 from socket import *
 import pickle
 import os
+import codecs
 
 DEFAULT_MESSAGE = {'PAYLOAD_LENGTH': 0, 'TCP_SYN_FLAG': 0, 'TCP_ACK_FLAG': 0, 'TCP_FIN_FLAG': 0, 'HTTP_GET_REQUEST': 0, 'HTTP_RESPONSE_STATUS_CODE': 0, 'HTTP_CLIENT_VERSION': 0, 'HTTP_REQUEST_PATH': 0, 'HTTP_INCLUDED_OBJECT_PATH': 0}
 serverDir = os.getcwd()
@@ -34,7 +35,7 @@ while 1:
     else:
         response['HTTP_INCLUDED_OBJECT_PATH'] = 0
     try:
-        file = open(request['HTTP_REQUEST_PATH'], "r")
+        file = codecs.open(request['HTTP_REQUEST_PATH'], 'r')
         fileData = file.read()
         response['HTTP_CLIENT_VERSION'] = httpClientVersion
         response['HTTP_RESPONSE_STATUS_CODE'] = 200
