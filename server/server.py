@@ -2,6 +2,7 @@ from socket import *
 import pickle
 import os
 import codecs
+import time
 
 DEFAULT_MESSAGE = {'PAYLOAD_LENGTH': 0, 'TCP_SYN_FLAG': 0, 'TCP_ACK_FLAG': 0, 'TCP_FIN_FLAG': 0, 'HTTP_GET_REQUEST': 0, 'HTTP_RESPONSE_STATUS_CODE': 0, 'HTTP_CLIENT_VERSION': 0, 'HTTP_REQUEST_PATH': 0, 'HTTP_INCLUDED_OBJECT_PATH': 0}
 serverDir = os.getcwd()
@@ -15,18 +16,18 @@ serverSocket.listen(1)
 print ('The server is ready to receive')
 while 1:
     connectionSocket, addr = serverSocket.accept()
-    request = pickle.loads(connectionSocket.recv(1024))
+    request = pickle.loads(connectionSocket.recv(2048))
     print("TCP SYN message received from the client.")
     response = request
     response['TCP_ACK_FLAG'] = 1
     connectionSocket.send(pickle.dumps(response))
     print("TCP SYN ACK message sent to client. Waiting for TCP ACK message from the client.")
 
-    request = pickle.loads(connectionSocket.recv(1024))
+    request = pickle.loads(connectionSocket.recv(2048))
     print("Received TCP ACK from client. Connection established.\n")
     httpClientVersion = request['HTTP_CLIENT_VERSION']
     
-    request = pickle.loads(connectionSocket.recv(1024))
+    request = pickle.loads(connectionSocket.recv(2048))
     response = DEFAULT_MESSAGE
 
     print("HTTP GET request received from the client.")
@@ -51,39 +52,39 @@ while 1:
         print("File was not found in local directory. Sending a message with HTTP RESPONSE CODE 404.\n")
 
     if response['HTTP_INCLUDED_OBJECT_PATH'] != 0:
-        if request['HTTP_CLIENT_VERSION'] == 1.0:
+        if request['HTTP_CLIENT_VERSION'] == '1.0':
             print("Received TCP FIN message from client")
             response = request
             response['TCP_ACK_FLAG'] = 1
             print("Sending TCP FIN ACK message to the client.")
             connectionSocket.send(pickle.dumps(response))
-            request = pickle.loads(connectionSocket.recv(1024))
+            request = pickle.loads(connectionSocket.recv(2048))
             print("TCP ACK received. Connection closed...\n")
             connectionSocket.close()
 
             connectionSocket, addr = serverSocket.accept()
-            request = pickle.loads(connectionSocket.recv(1024))
+            request = pickle.loads(connectionSocket.recv(2048))
             print("TCP SYN message received from the client.")
             response = request
             response['TCP_ACK_FLAG'] = 1
             connectionSocket.send(pickle.dumps(response))
             print("TCP ACK message sent to client. Waiting for TCP ACK message from the client.")
 
-            request = pickle.loads(connectionSocket.recv(1024))
+            request = pickle.loads(connectionSocket.recv(2048))
             print("Received TCP ACK from client. Connection established.\n")
             httpClientVersion = request['HTTP_CLIENT_VERSION']
-        
-        request = pickle.loads(connectionSocket.recv(1024))
+
+        request = pickle.loads(connectionSocket.recv(2048))
         response = DEFAULT_MESSAGE
         print("HTTP GET request received from the client.")
 
         try:
-            file = open(request['HTTP_REQUEST_PATH'], "r")
+            file = codecs.open(request['HTTP_REQUEST_PATH'], "rb")
             fileData = file.read()
             response['HTTP_CLIENT_VERSION'] = httpClientVersion
             response['HTTP_RESPONSE_STATUS_CODE'] = 200
             connectionSocket.send(pickle.dumps(response))
-            connectionSocket.send(fileData.encode('utf-8'))
+            connectionSocket.send(fileData)
             print("File data has been sent to the client.\n")
             file.close()
 
@@ -99,6 +100,6 @@ while 1:
     response['TCP_ACK_FLAG'] = 1
     print("Sending TCP FIN ACK message to the client.")
     connectionSocket.send(pickle.dumps(response))
-    request = pickle.loads(connectionSocket.recv(1024))
+    request = pickle.loads(connectionSocket.recv(2048))
     print("TCP ACK received. Connection closed...\n")
     connectionSocket.close()

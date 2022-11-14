@@ -2,6 +2,7 @@ from socket import *
 import pickle
 import os
 import codecs
+import time
 
 clientDir = os.getcwd()
 
@@ -32,7 +33,7 @@ def main():
         print("Connecting to the server.")
         clientSocket.send(pickle.dumps(request))
         print("TCP SYN request has been sent to the server.")
-        response = pickle.loads(clientSocket.recv(1024))
+        response = pickle.loads(clientSocket.recv(2048))
         request['TCP_ACK_FLAG'] = 1
         clientSocket.send(pickle.dumps(request))
         print("Received TCP ACK from server. Sent a TCP ACK back to the server.")
@@ -46,9 +47,9 @@ def main():
         sel = input()
 
         if sel == '1':
-            httpVersion = 1.0
+            httpVersion = '1.0'
         elif sel == '2':
-            httpVersion = 1.1
+            httpVersion = '1.1'
         else:
             print("Invalid selection.\n")
             continue
@@ -57,12 +58,12 @@ def main():
         clientSocket.send(pickle.dumps(request))
         print("\nSent HTTP GET request for file.")
 
-        response = pickle.loads(clientSocket.recv(1024))
+        response = pickle.loads(clientSocket.recv(2048))
         if response['HTTP_RESPONSE_STATUS_CODE'] == 200:
             print("\nServer sent response code: 200 OK")
             requestedFile = os.path.split(requestedFile)[1]
-            fileData = clientSocket.recv(1024).decode() # Get file data from response
-            file = open(requestedFile, "w")
+            fileData = clientSocket.recv(2048) # Get file data from response
+            file = open(requestedFile, "wb")
             file.write(fileData)
             print("\nFile data:", fileData, "\n")
             file.close()
@@ -73,12 +74,12 @@ def main():
         # and will send another GET message the server for that file.
         if response['HTTP_INCLUDED_OBJECT_PATH'] != 0:
             requestedFile = response['HTTP_INCLUDED_OBJECT_PATH']
-            if httpVersion == 1.0:
+            if httpVersion == '1.0':
                 request = DEFAULT_MESSAGE
                 request['TCP_FIN_FLAG'] = 1
                 clientSocket.send(pickle.dumps(request))
                 print("\nSent TCP FIN message to the server.")
-                response = pickle.loads(clientSocket.recv(1024))
+                response = pickle.loads(clientSocket.recv(2048))
                 print("Received TCP FIN ACK from the server.")
                 request['TCP_FIN_FLAG'] = 0
                 clientSocket.send(pickle.dumps(request))
@@ -90,11 +91,12 @@ def main():
                 print("Connecting to the server.")
                 clientSocket.send(pickle.dumps(request))
                 print("TCP SYN request has been sent to the server.")
-                response = pickle.loads(clientSocket.recv(1024))
+                response = pickle.loads(clientSocket.recv(2048))
                 request['TCP_ACK_FLAG'] = 1
                 clientSocket.send(pickle.dumps(request))
                 print("Received TCP ACK from server. Sent a TCP ACK back to the server.")
                 print("Connection established.")
+                time.sleep(0.1)
             
             # Send get request for the second file
             payloadLength = len(requestedFile)
@@ -103,13 +105,12 @@ def main():
             print("\nSent HTTP GET request for file.")
             
             # Retrieve file data then print that file and save it
-            response = pickle.loads(clientSocket.recv(1024))
+            response = pickle.loads(clientSocket.recv(2048))
             if response['HTTP_RESPONSE_STATUS_CODE'] == 200:
                 print("\nServer sent response code: 200 OK")
                 requestedFile = os.path.split(requestedFile)[1]
-                print(requestedFile)
-                fileData = clientSocket.recv(1024).decode("utf-8", "ignore") # Get file data from response
-                file = codecs.open(requestedFile, "w")
+                fileData = clientSocket.recv(2048) # Get file data from response
+                file = codecs.open(requestedFile, "wb")
                 file.write(fileData)
                 print("\nFile data:", fileData, "\n")
                 file.close()
@@ -120,7 +121,7 @@ def main():
         request['TCP_FIN_FLAG'] = 1
         clientSocket.send(pickle.dumps(request))
         print("Sent TCP FIN message to the server.")
-        response = pickle.loads(clientSocket.recv(1024))
+        response = pickle.loads(clientSocket.recv(2048))
         print("Received TCP FIN ACK from the server.")
         request['TCP_FIN_FLAG'] = 0
         clientSocket.send(pickle.dumps(request))
