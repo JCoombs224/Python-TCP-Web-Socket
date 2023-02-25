@@ -65,7 +65,7 @@ def main():
             fileData = clientSocket.recv(2048) # Get file data from response
             file = open(requestedFile, "wb")
             file.write(fileData)
-            print("\nFile data:", fileData, "\n")
+            print("\nFile data:", fileData.decode(), "\n")
             file.close()
         elif response['HTTP_RESPONSE_STATUS_CODE'] == 404:
             print("\nServer sent response code: 404 PAGE NOT FOUND")
@@ -112,7 +112,7 @@ def main():
                 fileData = clientSocket.recv(2048) # Get file data from response
                 file = codecs.open(requestedFile, "wb")
                 file.write(fileData)
-                print("\nFile data:", fileData, "\n")
+                print("\nFile data:", fileData.decode(), "\n")
                 file.close()
             elif response['HTTP_RESPONSE_STATUS_CODE'] == 404:
                 print("\nServer sent response code: 404 PAGE NOT FOUND")
